@@ -1,6 +1,6 @@
 "use client";
 
-import Dropzone, { type DropzoneState } from "shadcn-dropzone";
+import Dropzone from "shadcn-dropzone";
 import type { Clip } from "@prisma/client";
 import Link from "next/link";
 import { Button } from "./ui/button";
