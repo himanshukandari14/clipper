@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LayoutDashboard, Menu, Scissors, Sparkles, Zap, Type, Palette, MonitorPlay, Wand2, Share2, BarChart3, Layers } from "lucide-react";
+import { LayoutDashboard, Menu, Scissors, Sparkles, Zap, Type, Palette, MonitorPlay, Share2, BarChart3 } from "lucide-react";
 
 export default function FeaturesPage() {
     return (
@@ -75,14 +75,14 @@ export default function FeaturesPage() {
                                     <Zap className="w-6 h-6" />
                                 </div>
                                 <h3 className="text-3xl font-bold text-white mb-4">Context-Aware Auto Clipping</h3>
-                                <p className="text-zinc-400 text-lg max-w-md">Our AI doesn't just look for silence. It analyzes sentiment, laughter, and speaker intensity to identify purely gold moments.</p>
+                                <p className="text-zinc-400 text-lg max-w-md">Our AI doesn&apos;t just look for silence. It analyzes sentiment, laughter, and speaker intensity to identify purely gold moments.</p>
                             </div>
                             {/* Visual Representation */}
                             <div className="absolute right-0 bottom-0 w-2/3 h-2/3 opacity-50 group-hover:opacity-80 transition-opacity">
                                 <div className="w-full h-full bg-gradient-to-t from-black to-transparent z-10 absolute bottom-0" />
                                 {/* Abstract waveforms */}
                                 <div className="flex items-end justify-center gap-1 h-full pb-8 pr-8">
-                                    {[...Array(20)].map((_, i) => (
+                                    {Array.from({ length: 20 }).map((_, i) => (
                                         <div key={i} className="w-4 bg-primary rounded-t-sm animate-wave" style={{
                                             height: `${30 + Math.random() * 70}%`,
                                             animationDelay: `${i * 0.1}s`,

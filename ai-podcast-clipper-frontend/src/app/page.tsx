@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, LayoutDashboard, Menu, Play, Scissors, Sparkles, Youtube } from "lucide-react";
+import { ArrowRight, LayoutDashboard, Menu, Play, Scissors, Sparkles } from "lucide-react";
 
 export default function HomePage() {
   return (
@@ -97,7 +97,7 @@ export default function HomePage() {
 
               {/* Background Waveform (Input) */}
               <div className="absolute w-[120%] h-32 opacity-20 flex items-center gap-1 left-1/2 -translate-x-1/2 overflow-hidden mask-linear-fade">
-                {[...Array(60)].map((_, i) => (
+                {Array.from({ length: 60 }).map((_, i) => (
                   <div
                     key={i}
                     className="w-2 bg-primary rounded-full animate-wave"
@@ -137,9 +137,9 @@ export default function HomePage() {
                           VIRAL MOMENT
                         </div>
                         <div className="text-center">
-                          <span className="bg-black/50 text-white font-bold text-lg md:text-2xl px-1">"Absolutely</span>
+                          <span className="bg-black/50 text-white font-bold text-lg md:text-2xl px-1">&quot;Absolutely</span>
                           <br />
-                          <span className="bg-black/50 text-primary font-bold text-lg md:text-2xl px-1">Insane!"</span>
+                          <span className="bg-black/50 text-primary font-bold text-lg md:text-2xl px-1">Insane!&quot;</span>
                         </div>
                       </div>
 

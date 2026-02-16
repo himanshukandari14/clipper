@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LayoutDashboard, Menu, Scissors, Youtube, Play, Heart, Share, Loader2 } from "lucide-react";
+import { LayoutDashboard, Menu, Scissors, Play, Heart, Share, Loader2 } from "lucide-react";
 
 export default function ShowcasePage() {
     return (
