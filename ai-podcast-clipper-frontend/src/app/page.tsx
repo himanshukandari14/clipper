@@ -18,8 +18,15 @@ export default function HomePage() {
 
           {/* Nav Links */}
           <nav className="hidden lg:flex gap-8 text-sm font-medium text-muted-foreground">
-            {['Features', 'Showcase', 'Pricing', 'Docs'].map((item) => (
-              <Link key={item} href="#" className="hover:text-primary transition-colors">
+            {['Features', 'Showcase', 'Pricing'].map((item) => (
+              <Link
+                key={item}
+                href={item === 'Features' ? '/features' : item === 'Showcase' ? '/showcase' : '/pricing'}
+                className="hover:text-primary transition-colors"
+                style={{
+                  color: item === 'Features' || item === 'Showcase' ? 'white' : undefined
+                }}
+              >
                 {item}
               </Link>
             ))}
