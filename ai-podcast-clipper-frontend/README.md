@@ -1,29 +1,115 @@
-# Create T3 App
+# AI Podcast Clipper
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+AI Podcast Clipper is a powerful full-stack application designed to transform long-form podcast videos into engaging, short-form vertical content. By leveraging advanced AI models for transcription, content analysis, and computer vision, it automatically identifies viral moments, centers the active speaker, and burns in dynamic subtitles.
 
-## What's next? How do I make an app with this?
+## 🚀 Features
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+- **Smart Clipping**: Uses **Google Gemini** to intelligently analyze transcripts and identify engaging Q&A segments or stories suitable for short clips (30-60s).
+- **Active Speaker Detection**: Automatically tracks and crops the video to focus on the current speaker, converting landscape video to vertical (9:16) format perfect for TikTok, Shorts, and Reels.
+- **AI Transcription**: Powered by **WhisperX** for high-accuracy speech-to-text with precise word-level timestamps.
+- **Dynamic Subtitles**: Automatically generates and burns in stylish, perfectly timed subtitles.
+- **Full-Stack Architecture**: Built with the **T3 Stack** (Next.js, tRPC, Prisma) and **Modal** for scalable serverless AI processing.
+- **Background Processing**: Robust job orchestration using **Inngest**.
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## 🛠 Tech Stack
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+### Frontend & App Logic
+- **Framework**: [Next.js](https://nextjs.org) (App Router)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com) & [Shadcn UI](https://ui.shadcn.com)
+- **Database**: [PostgreSQL](https://postgresql.org) with [Prisma ORM](https://prisma.io)
+- **Authentication**: [NextAuth.js](https://next-auth.js.org)
+- **Job Queue**: [Inngest](https://www.inngest.com)
+- **Storage**: [AWS S3](https://aws.amazon.com/s3)
+- **Payments**: [Stripe](https://stripe.com)
 
-## Learn More
+### AI Backend (Python/Modal)
+- **Infrastructure**: [Modal](https://modal.com) (Serverless GPU)
+- **Transcription**: [WhisperX](https://github.com/m-bain/whisperX)
+- **LLM**: [Google Gemini](https://deepmind.google/technologies/gemini/) (via `google-genai`)
+- **Video Processing**: FFmpeg, OpenCV, generic active speaker detection scripts.
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+## 📦 Project Structure
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+```
+├── ai-podcast-clipper-frontend  # Next.js web application
+└── ai-podcast-clipper-backend   # Python/Modal scripts for AI processing
+```
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+## 🏁 Getting Started
 
-## How do I deploy this?
+### Prerequisites
+- Node.js 18+ and npm
+- Python 3.10+ (for backend development)
+- PostgreSQL database
+- AWS S3 bucket
+- Google Gemini API Key
+- Modal account
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd ai-podcast-clipper/ai-podcast-clipper-frontend
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Environment Setup**
+   Copy the example environment file and fill in your secrets.
+   ```bash
+   cp .env.example .env
+   ```
+   *See `.env.example` for the required variables.*
+
+4. **Database Setup**
+   Push the schema to your database.
+   ```bash
+   npm run db:push
+   ```
+
+5. **Start the Development Server**
+   ```bash
+   npm run dev
+   ```
+   The app will be available at `http://localhost:3000`.
+
+6. **Start Inngest Dev Server** (in a separate terminal)
+   To handle background events locally:
+   ```bash
+   npm run inngest-dev
+   ```
+   Open `http://localhost:8288` to utilize the Inngest dashboard.
+
+## 🧠 Backend Deployment (Modal)
+
+The heavy lifting (transcription, cropping, rendering) happens on the backend using Modal.
+
+1. Navigate to the backend directory:
+   ```bash
+   cd ../ai-podcast-clipper-backend
+   ```
+
+2. Install Modal and setup authentication:
+   ```bash
+   pip install modal
+   modal setup
+   ```
+
+3. Deploy or run the app:
+   ```bash
+   modal deploy main.py
+   # OR run ephemerally
+   modal run main.py
+   ```
+
+## 📜 Scripts
+
+- `npm run dev`: Starts the Next.js development server.
+- `npm run build`: Builds the application for production.
+- `npm run inngest-dev`: Starts the Inngest local development server.
+- `npm run db:push`: Pushes the Prisma schema state to the database.
+- `npm run db:studio`: Opens Prisma Studio to view database records.
