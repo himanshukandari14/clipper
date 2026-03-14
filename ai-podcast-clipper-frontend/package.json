@@ -36,6 +36,7 @@
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "framer-motion": "^12.36.0",
     "inngest": "^3.35.1",
     "lucide-react": "^0.509.0",
     "next": "15.2.8",
@@ -47,7 +48,7 @@
     "shadcn-dropzone": "^0.2.1",
     "sonner": "^2.0.3",
     "stripe": "^18.1.0",
-    "tailwind-merge": "^3.2.0",
+    "tailwind-merge": "^3.5.0",
     "uuid": "^11.1.0",
     "zod": "^3.24.2"
   },
