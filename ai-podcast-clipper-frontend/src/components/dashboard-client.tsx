@@ -5,13 +5,6 @@ import type { Clip } from "@prisma/client";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
 import { Loader2, UploadCloud, CheckCircle2, ListVideo } from "lucide-react";
 import { useState } from "react";
 import { generateUploadUrl } from "~/actions/s3";
@@ -25,7 +18,6 @@ import {
   TableHeader,
   TableRow,
 } from "./ui/table";
-import { Badge } from "./ui/badge";
 import { useRouter } from "next/navigation";
 import { ClipDisplay } from "./clip-display";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Scissors, Check, Zap, Sparkles } from "lucide-react";
+import { Scissors, Check, Zap, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { SiteHeader } from "~/components/site-header";
 

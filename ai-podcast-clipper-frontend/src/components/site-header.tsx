@@ -14,8 +14,8 @@ export function SiteHeader() {
   useEffect(() => {
     fetch("/api/auth/session")
       .then(res => res.json())
-      .then(session => {
-        if (session && Object.keys(session).length > 0 && session.user) {
+      .then((session: { user?: unknown } | null) => {
+        if (session && typeof session === "object" && "user" in session && session.user) {
           setIsLoggedIn(true);
         }
         setAuthChecking(false);

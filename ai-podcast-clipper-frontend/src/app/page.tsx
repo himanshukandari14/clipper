@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Play, Scissors, Wand2, Sparkles, Video, Zap, Share2 } from "lucide-react";
-import { motion, useScroll, useTransform, useSpring, useInView } from "framer-motion";
-import { useRef, useState, useEffect } from "react";
+import { Play, Scissors, Wand2, Sparkles, Video, Zap, Share2 } from "lucide-react";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+import { useRef } from "react";
 import { SiteHeader } from "~/components/site-header";
 
 const staggerContainer = {
@@ -14,11 +14,6 @@ const staggerContainer = {
 const blockReveal = {
   hidden: { y: 80, opacity: 0, scale: 0.9, rotateX: 20, filter: "blur(15px)" },
   show: { y: 0, opacity: 1, scale: 1, rotateX: 0, filter: "blur(0px)", transition: { type: "spring" as const, bounce: 0.4, duration: 1.2 } }
-};
-
-const badgeEnter = {
-  hidden: { x: 50, opacity: 0, scale: 0.5, rotate: -20 },
-  show: { x: 0, opacity: 1, scale: 1, rotate: 0, transition: { type: "spring" as const, damping: 12, mass: 0.5, delay: 0.8 } }
 };
 
 const cardHover = {
@@ -39,23 +34,6 @@ export default function HomePage() {
   const scaleDown = useTransform(smoothScroll, [0, 0.3], [1, 0.8]);
   const blurOut = useTransform(smoothScroll, [0, 0.3], ["blur(0px)", "blur(20px)"]);
 
-  // Accuracy State
-  const [accuracy, setAccuracy] = useState(2);
-  useEffect(() => {
-    let current = 2;
-    const interval = setInterval(() => {
-      if (current < 100) {
-        current += Math.floor(Math.random() * 8) + 1;
-        if (current >= 100) {
-          current = 100;
-          clearInterval(interval);
-        }
-        setAccuracy(current);
-      }
-    }, 40); 
-    return () => clearInterval(interval);
-  }, []);
-  
   return (
     <div className="min-h-screen flex flex-col bg-[#050505] text-white font-sans selection:bg-primary selection:text-primary-foreground overflow-x-hidden overflow-y-clip" ref={containerRef}>
       
@@ -105,7 +83,6 @@ export default function HomePage() {
                  <span className="text-[10px] font-bold uppercase tracking-widest">Live</span>
               </motion.div>
               <span className="font-sans">AI-Powered Video Clipping Engine</span>
-              <ArrowRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-primary group-hover:translate-x-1.5 transition-all" />
             </motion.div>
             
             <motion.h1 
@@ -254,7 +231,7 @@ export default function HomePage() {
               animate={{ x: ["0%", "-50%"] }}
               transition={{ repeat: Infinity, ease: "linear", duration: 35 }}
             >
-              {[...Array(14)].map((_, i) => (
+              {Array.from({ length: 14 }).map((_, i) => (
                 <motion.div 
                   key={i} 
                   whileHover={{ scale: 1.05, z: 50, zIndex: 30 }}
@@ -370,7 +347,7 @@ export default function HomePage() {
             transition={{ duration: 0.8 }}
             className="text-center mb-20"
           >
-            <h2 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-tight leading-[0.9]">Don't just clip. <br/><span className="font-script text-[1.2em] font-medium text-primary tracking-normal normal-case inline-block -rotate-6 transform hover:rotate-0 transition-transform duration-500 text-shadow-glow">Create.</span></h2>
+            <h2 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-tight leading-[0.9]">Don&apos;t just clip. <br/><span className="font-script text-[1.2em] font-medium text-primary tracking-normal normal-case inline-block -rotate-6 transform hover:rotate-0 transition-transform duration-500 text-shadow-glow">Create.</span></h2>
             <p className="text-zinc-500 text-xl max-w-2xl mx-auto font-medium">Everything you need to turn a 2 hour podcast into a month of highly engaging content. Handled by machines, mastered by you.</p>
           </motion.div>
 
@@ -487,7 +464,7 @@ export default function HomePage() {
                        <div className="flex gap-1 mb-4">
                           {[1,2,3,4,5].map(star => <Sparkles key={star} className="w-4 h-4 text-primary" />)}
                        </div>
-                       <p className="text-zinc-300 text-lg leading-relaxed font-medium">"{t.quote}"</p>
+                       <p className="text-zinc-300 text-lg leading-relaxed font-medium">&quot;{t.quote}&quot;</p>
                     </div>
                     
                     <div className="flex items-center justify-between border-t border-white/10 pt-6 relative z-10">

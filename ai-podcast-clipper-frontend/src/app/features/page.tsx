@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Scissors, Sparkles, Zap, Type, Palette, MonitorPlay, Share2, BarChart3, ArrowRight } from "lucide-react";
+import { Scissors, Sparkles, Zap, Type, Palette, MonitorPlay, Share2, BarChart3 } from "lucide-react";
 import { motion } from "framer-motion";
 import { SiteHeader } from "~/components/site-header";
 
@@ -74,7 +74,7 @@ export default function FeaturesPage() {
                                     <Zap className="w-8 h-8" />
                                 </motion.div>
                                 <h3 className="text-4xl font-black tracking-tight text-white mb-4">Context-Aware AI</h3>
-                                <p className="text-zinc-400 text-lg leading-relaxed font-medium">Our models don't just look for loud noises. They parse sentiment, tension, and micro-expressions to extract statistically certified algorithmic gold.</p>
+                                <p className="text-zinc-400 text-lg leading-relaxed font-medium">Our models don&apos;t just look for loud noises. They parse sentiment, tension, and micro-expressions to extract statistically certified algorithmic gold.</p>
                             </div>
 
                             {/* Decorative Visual element inside the wide card */}
