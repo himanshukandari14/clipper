@@ -35,10 +35,10 @@ declare module "next-auth" {
  */
 export const authConfig = {
   providers: [
-    GoogleProvider({
-      clientId: env.AUTH_GOOGLE_ID,
-      clientSecret: env.AUTH_GOOGLE_SECRET,
-    }),
+    // GoogleProvider({
+    //   clientId: env.AUTH_GOOGLE_ID,
+    //   clientSecret: env.AUTH_GOOGLE_SECRET,
+    // }),
     CredentialsProvider({
       name: "credentials",
       credentials: {
