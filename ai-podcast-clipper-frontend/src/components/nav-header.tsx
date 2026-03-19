@@ -13,33 +13,38 @@ import {
 } from "./ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { signOut } from "next-auth/react";
+import { motion } from "framer-motion";
+import { Scissors } from "lucide-react";
 
-const NavHeader = ({ credits, email }: { credits: number; email: string }) => {
+export const NavHeader = ({ credits, email }: { credits: number; email: string }) => {
   return (
-    <header className="bg-background sticky top-0 z-10 flex justify-center border-b border-white/5 bg-background/80 backdrop-blur-md">
-      <div className="container flex h-16 items-center justify-between px-4 py-2">
-        <Link href="/dashboard" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 flex items-center justify-center bg-gradient-to-br from-green-400 to-primary rounded-md group-hover:scale-105 transition-transform overflow-hidden relative">
-            <div className="absolute inset-0 bg-white/20 animate-pulse" />
-            {/* Scissors Icon directly embedded as SVG since we can't import lucide-react in this component file context easily without adding an import, assuming consistency with Homepage */}
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-scissors relative z-10"><circle cx="6" cy="6" r="3" /><circle cx="6" cy="18" r="3" /><line x1="20" x2="8.12" y1="4" y2="15.88" /><line x1="14.47" x2="20" y1="14.48" y2="20" /><line x1="8.12" x2="12" y1="8.12" y2="12" /></svg>
-          </div>
-          <span className="font-bold text-xl tracking-tight text-white">PodClip</span>
+    <motion.header 
+      initial={{ y: -100, opacity: 0, rotateX: 90 }}
+      animate={{ y: 0, opacity: 1, rotateX: 0 }}
+      transition={{ type: "spring", bounce: 0.5, duration: 1.5, delay: 0.1 }}
+      className="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-5xl z-50 pointer-events-none origin-top"
+    >
+      <div className="pointer-events-auto flex items-center justify-between px-4 py-2.5 bg-black/40 backdrop-blur-2xl border border-white/10 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+        <Link href="/" className="flex items-center gap-3 pl-3 group">
+            <div className="w-8 h-8 flex items-center justify-center bg-primary rounded-xl rotate-3 group-hover:-rotate-12 transition-transform duration-500 shadow-[0_0_15px_rgba(var(--primary),0.5)]">
+                <Scissors className="w-4 h-4 text-black" />
+            </div>
+            <span className="font-bold text-lg tracking-tight text-white group-hover:text-primary transition-colors">PodClip<span className="text-white/50">.ai</span></span>
         </Link>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 pr-1">
           <div className="flex items-center gap-2">
             <Badge
               variant="secondary"
-              className="h-8 px-3 py-1.5 text-xs font-medium"
+              className="h-8 px-4 py-1.5 text-xs font-bold rounded-full border border-white/10 bg-white/5 text-zinc-300"
             >
-              {credits} credits
+              {credits} Credits
             </Badge>
             <Button
               variant="outline"
               size="sm"
               asChild
-              className="h-8 text-xs font-medium"
+              className="h-8 text-xs font-bold rounded-full border border-primary/20 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary transition-colors"
             >
               <Link href="/dashboard/billing">Buy more</Link>
             </Button>
@@ -49,14 +54,14 @@ const NavHeader = ({ credits, email }: { credits: number; email: string }) => {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="relative h-8 w-8 rounded-full p-0"
+                className="relative h-8 w-8 rounded-full p-0 border border-white/10 hover:border-white/20 transition-all opacity-80 hover:opacity-100"
               >
-                <Avatar>
-                  <AvatarFallback>{email.charAt(0)}</AvatarFallback>
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="bg-primary text-black font-bold uppercase">{email.charAt(0)}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl text-white">
               <DropdownMenuLabel>
                 <p className="text-muted-foreground text-xs">{email}</p>
               </DropdownMenuLabel>
@@ -75,7 +80,7 @@ const NavHeader = ({ credits, email }: { credits: number; email: string }) => {
           </DropdownMenu>
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 };
 
