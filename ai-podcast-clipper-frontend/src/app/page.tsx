@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, LayoutDashboard, Menu, Play, Scissors, Sparkles, Wand2, Zap, Share2, AudioWaveform } from "lucide-react";
+import { ArrowRight, Menu, Play, Scissors, Wand2, Share2 } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 
