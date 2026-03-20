@@ -1,6 +1,5 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import Stripe from "stripe";
 import { env } from "~/env";
 import { auth } from "~/server/auth";
@@ -18,45 +17,54 @@ const PRICE_IDS: Record<PriceId, string> = {
   large: env.STRIPE_LARGE_CREDIT_PACK,
 };
 
-export async function createCheckoutSession(priceId: PriceId) {
-  const serverSession = await auth();
-  if (!serverSession?.user?.id) {
-    throw new Error("Unauthorized");
-  }
+export type CheckoutResult = { url: string } | { error: string };
 
-  const user = await db.user.findUniqueOrThrow({
-    where: {
-      id: serverSession.user.id,
-    },
-    select: { stripeCustomerId: true, email: true },
-  });
+export async function createCheckoutSession(priceId: PriceId): Promise<CheckoutResult> {
+  try {
+    const serverSession = await auth();
+    if (!serverSession?.user?.id) {
+      return { error: "Please sign in to purchase credits." };
+    }
 
-  let customerId = user.stripeCustomerId;
-  if (!customerId && user.email) {
-    const customer = await stripe.customers.create({
-      email: user.email,
+    const user = await db.user.findUniqueOrThrow({
+      where: {
+        id: serverSession.user.id,
+      },
+      select: { stripeCustomerId: true, email: true },
     });
-    customerId = customer.id;
-    await db.user.update({
-      where: { id: serverSession.user.id },
-      data: { stripeCustomerId: customerId },
+
+    let customerId = user.stripeCustomerId;
+    if (!customerId && user.email) {
+      const customer = await stripe.customers.create({
+        email: user.email,
+      });
+      customerId = customer.id;
+      await db.user.update({
+        where: { id: serverSession.user.id },
+        data: { stripeCustomerId: customerId },
+      });
+    }
+
+    if (!customerId) {
+      return { error: "Your account has no email. Please add an email to purchase credits." };
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      line_items: [{ price: PRICE_IDS[priceId], quantity: 1 }],
+      customer: customerId,
+      mode: "payment",
+      success_url: `${env.BASE_URL}/dashboard?success=true`,
+      cancel_url: `${env.BASE_URL}/dashboard/billing`,
     });
+
+    if (!session.url) {
+      return { error: "Failed to create checkout session. Please try again." };
+    }
+
+    return { url: session.url };
+  } catch (err) {
+    console.error("Stripe checkout error:", err);
+    const message = err instanceof Error ? err.message : "Something went wrong";
+    return { error: message };
   }
-
-  if (!customerId) {
-    throw new Error("User has no email for Stripe customer");
-  }
-
-  const session = await stripe.checkout.sessions.create({
-    line_items: [{ price: PRICE_IDS[priceId], quantity: 1 }],
-    customer: customerId,
-    mode: "payment",
-    success_url: `${env.BASE_URL}/dashboard?success=true`,
-  });
-
-  if (!session.url) {
-    throw new Error("Failed to create session URL");
-  }
-
-  redirect(session.url);
 }

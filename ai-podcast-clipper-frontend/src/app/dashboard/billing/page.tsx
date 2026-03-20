@@ -1,8 +1,10 @@
 "use client";
 
 import type { VariantProps } from "class-variance-authority";
-import { ArrowLeftIcon, CheckIcon } from "lucide-react";
+import { ArrowLeftIcon, CheckIcon, Loader2Icon } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
+import { toast } from "sonner";
 import { createCheckoutSession, type PriceId } from "~/actions/stripe";
 import { Button, type buttonVariants } from "~/components/ui/button";
 import {
@@ -61,7 +63,15 @@ const plans: PricingPlan[] = [
   },
 ];
 
-function PricingCard({ plan }: { plan: PricingPlan }) {
+function PricingCard({
+  plan,
+  onPurchase,
+  isLoading,
+}: {
+  plan: PricingPlan;
+  onPurchase: (priceId: PriceId) => Promise<void>;
+  isLoading: boolean;
+}) {
   return (
     <Card
       className={cn(
@@ -95,20 +105,40 @@ function PricingCard({ plan }: { plan: PricingPlan }) {
         </ul>
       </CardContent>
       <CardFooter>
-        <form
-          action={() => createCheckoutSession(plan.priceId)}
+        <Button
+          variant={plan.buttonVariant}
           className="w-full"
+          disabled={isLoading}
+          onClick={() => onPurchase(plan.priceId)}
         >
-          <Button variant={plan.buttonVariant} className="w-full" type="submit">
-            {plan.buttonText}
-          </Button>
-        </form>
+          {isLoading ? (
+            <Loader2Icon className="size-4 animate-spin" />
+          ) : (
+            plan.buttonText
+          )}
+        </Button>
       </CardFooter>
     </Card>
   );
 }
 
 export default function BillingPage() {
+  const [loadingPriceId, setLoadingPriceId] = useState<PriceId | null>(null);
+
+  async function handlePurchase(priceId: PriceId) {
+    setLoadingPriceId(priceId);
+    try {
+      const result = await createCheckoutSession(priceId);
+      if ("url" in result) {
+        window.location.href = result.url;
+      } else {
+        toast.error(result.error);
+      }
+    } finally {
+      setLoadingPriceId(null);
+    }
+  }
+
   return (
     <div className="mx-auto flex flex-col space-y-8 px-4 py-12">
       <div className="relative flex items-center justify-center gap-4">
@@ -135,7 +165,12 @@ export default function BillingPage() {
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
         {plans.map((plan) => (
-          <PricingCard key={plan.title} plan={plan} />
+          <PricingCard
+            key={plan.title}
+            plan={plan}
+            onPurchase={handlePurchase}
+            isLoading={loadingPriceId === plan.priceId}
+          />
         ))}
       </div>
 
