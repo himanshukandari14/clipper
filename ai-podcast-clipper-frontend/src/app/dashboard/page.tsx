@@ -12,7 +12,7 @@ export default async function DashboardPage() {
     redirect("/");
   }
 
-  const userData = await db.user.findUniqueOrThrow({
+  const userData = await db.user.findUnique({
     where: { id: session.user.id },
     select: {
       uploadedFiles: {
@@ -39,6 +39,10 @@ export default async function DashboardPage() {
       },
     },
   });
+
+  if (!userData) {
+    redirect("/");
+  }
 
   const formattedFiles = userData.uploadedFiles.map((file) => ({
     id: file.id,

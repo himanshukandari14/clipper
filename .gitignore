@@ -24,6 +24,8 @@ pnpm-debug.log*
 *.sublime-workspace
 
 *.mp4
+# Exception: homepage clips in public folder (must be deployed)
+!ai-podcast-clipper-frontend/public/videos/*.mp4
 
 # Frontend (evo2-frontend - Next.js)
 ai-podcast-clipper-frontend/node_modules/
