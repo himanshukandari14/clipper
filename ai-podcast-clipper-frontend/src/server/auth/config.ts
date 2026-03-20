@@ -1,8 +1,8 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-import { comparePasswords } from "~/lib/auth";
-
+import GoogleProvider from "next-auth/providers/google";
+import Stripe from "stripe";
+import { env } from "~/env";
 import { db } from "~/server/db";
 
 /**
@@ -31,44 +31,49 @@ declare module "next-auth" {
  *
  * @see https://next-auth.js.org/configuration/options
  */
+const stripe =
+  env.STRIPE_SECRET_KEY?.startsWith("sk_")
+    ? new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: "2025-04-30.basil" })
+    : null;
+
 export const authConfig = {
   providers: [
-    // GoogleProvider({
-    //   clientId: env.AUTH_GOOGLE_ID,
-    //   clientSecret: env.AUTH_GOOGLE_SECRET,
-    // }),
-    CredentialsProvider({
-      name: "credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
-
-        const email = credentials.email as string;
-        const password = credentials.password as string;
-
-        const user = await db.user.findUnique({
-          where: { email },
-        });
-
-        if (!user) {
-          return null;
-        }
-
-        const passwordMatch = await comparePasswords(password, user.password);
-        if (!passwordMatch) return null;
-
-        return user;
-      },
-    }),
+    ...(env.AUTH_GOOGLE_ID && env.AUTH_GOOGLE_SECRET
+      ? [
+          GoogleProvider({
+            clientId: env.AUTH_GOOGLE_ID,
+            clientSecret: env.AUTH_GOOGLE_SECRET,
+          }),
+        ]
+      : []),
   ],
   session: { strategy: "jwt" },
   adapter: PrismaAdapter(db),
   callbacks: {
+    signIn: async ({ user }) => {
+      if (!user.email || !stripe) return true;
+
+      const dbUser = await db.user.findUnique({
+        where: { email: user.email },
+        select: { stripeCustomerId: true },
+      });
+
+      if (dbUser?.stripeCustomerId) return true;
+
+      try {
+        const customer = await stripe.customers.create({
+          email: user.email.toLowerCase(),
+          name: user.name ?? undefined,
+        });
+        await db.user.update({
+          where: { email: user.email },
+          data: { stripeCustomerId: customer.id },
+        });
+      } catch (err) {
+        console.error("[auth] Stripe customer creation failed:", err);
+      }
+      return true;
+    },
     session: ({ session, token }) => ({
       ...session,
       user: {

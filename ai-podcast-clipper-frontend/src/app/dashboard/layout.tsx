@@ -15,7 +15,7 @@ export default async function DashboardLayout({
   const session = await auth();
 
   if (!session?.user?.id) {
-    redirect("/login");
+    redirect("/");
   }
 
   const user = await db.user.findUniqueOrThrow({

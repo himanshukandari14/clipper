@@ -20,21 +20,36 @@ const PRICE_IDS: Record<PriceId, string> = {
 
 export async function createCheckoutSession(priceId: PriceId) {
   const serverSession = await auth();
+  if (!serverSession?.user?.id) {
+    throw new Error("Unauthorized");
+  }
 
   const user = await db.user.findUniqueOrThrow({
     where: {
-      id: serverSession?.user.id,
+      id: serverSession.user.id,
     },
-    select: { stripeCustomerId: true },
+    select: { stripeCustomerId: true, email: true },
   });
 
-  if (!user.stripeCustomerId) {
-    throw new Error("User has no stripeCustomerId");
+  let customerId = user.stripeCustomerId;
+  if (!customerId && user.email) {
+    const customer = await stripe.customers.create({
+      email: user.email,
+    });
+    customerId = customer.id;
+    await db.user.update({
+      where: { id: serverSession.user.id },
+      data: { stripeCustomerId: customerId },
+    });
+  }
+
+  if (!customerId) {
+    throw new Error("User has no email for Stripe customer");
   }
 
   const session = await stripe.checkout.sessions.create({
     line_items: [{ price: PRICE_IDS[priceId], quantity: 1 }],
-    customer: user.stripeCustomerId,
+    customer: customerId,
     mode: "payment",
     success_url: `${env.BASE_URL}/dashboard?success=true`,
   });

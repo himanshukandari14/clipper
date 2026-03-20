@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Play, Scissors, Wand2, Sparkles, Video, Zap, Share2 } from "lucide-react";
+import Image from "next/image";
+import { useState, useEffect } from "react";
+import { Scissors, Wand2, Star, Video, Zap, Share2 } from "lucide-react";
+import { signIn } from "next-auth/react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { useRef } from "react";
 import { SiteHeader } from "~/components/site-header";
@@ -16,6 +19,23 @@ const blockReveal = {
   show: { y: 0, opacity: 1, scale: 1, rotateX: 0, filter: "blur(0px)", transition: { type: "spring" as const, bounce: 0.4, duration: 1.2 } }
 };
 
+function TestimonialAvatar({ src, alt, initials }: { src: string; alt: string; initials: string }) {
+  const [hasError, setHasError] = useState(false);
+  if (hasError) {
+    return <span className="text-primary font-black text-sm">{initials}</span>;
+  }
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      width={48}
+      height={48}
+      className="w-full h-full object-cover"
+      onError={() => setHasError(true)}
+    />
+  );
+}
+
 const cardHover = {
   rest: { scale: 1, y: 0, z: 0 },
   hover: { scale: 1.02, y: -10, z: 50, transition: { type: "spring" as const, stiffness: 300, damping: 20 } }
@@ -24,7 +44,21 @@ const cardHover = {
 export default function HomePage() {
   const containerRef = useRef(null);
   const heroRef = useRef(null);
-  
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [authChecking, setAuthChecking] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/auth/session")
+      .then((res) => res.json())
+      .then((session: { user?: unknown } | null) => {
+        if (session && typeof session === "object" && "user" in session && session.user) {
+          setIsLoggedIn(true);
+        }
+        setAuthChecking(false);
+      })
+      .catch(() => setAuthChecking(false));
+  }, []);
+
   // Advanced Scroll Parallax Config
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end end"] });
   const smoothScroll = useSpring(scrollYProgress, { stiffness: 50, damping: 15, mass: 0.1 });
@@ -107,11 +141,26 @@ export default function HomePage() {
             </motion.p>
 
             <motion.div variants={blockReveal} className="flex flex-col sm:flex-row items-center gap-5 w-full sm:w-auto">
-              <Link href="/dashboard" className="w-full sm:w-auto">
-                <motion.button 
+              {isLoggedIn ? (
+                <Link href="/dashboard" className="w-full sm:w-auto">
+                  <motion.button
+                    whileHover={{ scale: 1.05, textShadow: "0px 0px 8px rgb(0,0,0)" }}
+                    whileTap={{ scale: 0.95 }}
+                    className="w-full sm:w-auto group relative px-8 py-5 rounded-2xl bg-primary text-black font-black text-lg transition-all overflow-hidden shadow-[0_0_30px_rgba(var(--primary),0.4)] hover:shadow-[0_0_60px_rgba(var(--primary),0.8)]"
+                  >
+                    <motion.div animate={{ x: ["-100%", "200%"] }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }} className="absolute inset-0 w-1/4 h-full bg-white/40 skew-x-12 blur-sm" />
+                    <span className="flex items-center justify-center gap-3 relative z-10">
+                      <Wand2 className="w-6 h-6 group-hover:rotate-12 transition-transform" />
+                      Start Creating Free
+                    </span>
+                  </motion.button>
+                </Link>
+              ) : (
+                <motion.button
                   whileHover={{ scale: 1.05, textShadow: "0px 0px 8px rgb(0,0,0)" }}
                   whileTap={{ scale: 0.95 }}
-                  className="w-full sm:w-auto group relative px-8 py-5 rounded-2xl bg-primary text-black font-black text-lg transition-all overflow-hidden shadow-[0_0_30px_rgba(var(--primary),0.4)] hover:shadow-[0_0_60px_rgba(var(--primary),0.8)]"
+                  onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+                  className={`w-full sm:w-auto group relative px-8 py-5 rounded-2xl bg-primary text-black font-black text-lg transition-all overflow-hidden shadow-[0_0_30px_rgba(var(--primary),0.4)] hover:shadow-[0_0_60px_rgba(var(--primary),0.8)] ${authChecking ? "opacity-0" : "opacity-100"}`}
                 >
                   <motion.div animate={{ x: ["-100%", "200%"] }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }} className="absolute inset-0 w-1/4 h-full bg-white/40 skew-x-12 blur-sm" />
                   <span className="flex items-center justify-center gap-3 relative z-10">
@@ -119,17 +168,7 @@ export default function HomePage() {
                     Start Creating Free
                   </span>
                 </motion.button>
-              </Link>
-              <Link href="/showcase" className="w-full sm:w-auto">
-                <motion.button 
-                  whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.3)" }}
-                  whileTap={{ scale: 0.95 }}
-                  className="w-full sm:w-auto px-8 py-5 rounded-2xl bg-transparent border-2 border-white/10 text-white font-bold text-lg transition-all flex items-center justify-center gap-3 shadow-lg"
-                >
-                  <Play className="w-5 h-5 fill-white/20" />
-                  See it in Action
-                </motion.button>
-              </Link>
+              )}
             </motion.div>
           </motion.div>
 
@@ -228,36 +267,41 @@ export default function HomePage() {
           <div className="w-full relative overflow-visible before:absolute before:left-0 before:top-0 before:w-16 md:before:w-64 before:h-full before:bg-gradient-to-r before:from-[#050505] before:to-transparent before:z-20 after:absolute after:right-0 after:top-0 after:w-16 md:after:w-64 after:h-full after:bg-gradient-to-l after:from-[#050505] after:to-transparent after:z-20">
             <motion.div
               className="flex gap-6 md:gap-10 w-max pl-6 md:pl-10 pb-8 pt-8"
-              animate={{ x: ["0%", "-50%"] }}
-              transition={{ repeat: Infinity, ease: "linear", duration: 35 }}
+              animate={{ x: ["0%", "-25%"] }}
+              transition={{ repeat: Infinity, repeatType: "loop", ease: "linear", duration: 40 }}
             >
-              {Array.from({ length: 14 }).map((_, i) => (
-                <motion.div 
-                  key={i} 
+              {(() => {
+                const clips = ["/videos/clip1.mp4", "/videos/clip2.mp4", "/videos/clip3.mp4", "/videos/clip4.mp4"];
+                return [...clips, ...clips, ...clips, ...clips];
+              })().map((src, i) => (
+                <motion.div
+                  key={i}
                   whileHover={{ scale: 1.05, z: 50, zIndex: 30 }}
                   transition={{ type: "spring", stiffness: 400, damping: 20 }}
                   className="relative w-56 h-[400px] md:w-72 md:h-[500px] rounded-3xl overflow-hidden border-2 border-white/5 flex-shrink-0 bg-zinc-900 group shadow-[0_15px_30px_rgba(0,0,0,0.6)] hover:shadow-[0_40px_80px_rgba(var(--primary),0.3)] hover:border-primary/50 cursor-pointer origin-center"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none opacity-90 group-hover:opacity-60 transition-opacity duration-700 z-10" />
-                  
-                  <motion.div 
-                     animate={{ scale: [1, 1.05, 1], opacity: [0.2, 0.4, 0.2] }} 
-                     transition={{ duration: 4, repeat: Infinity }}
-                     className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                  >
-                    <Video className="w-16 h-16 text-white" />
-                  </motion.div>
-                  
+                  <video
+                    src={src}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent pointer-events-none opacity-90 group-hover:opacity-60 transition-opacity duration-700 z-10" />
+
                   <div className="absolute bottom-6 left-6 right-6 flex flex-col gap-4 pointer-events-none transform translate-y-4 group-hover:translate-y-0 transition-all duration-500 z-20">
-                    <motion.div 
-                       whileHover={{ scale: 1.1 }}
-                       className="bg-primary text-black text-[11px] font-black px-3 py-1.5 rounded-md w-fit uppercase shadow-[0_0_20px_rgba(var(--primary),0.6)] backdrop-blur-md"
+                    <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      className="bg-primary text-black text-[11px] font-black px-3 py-1.5 rounded-md w-fit uppercase shadow-[0_0_20px_rgba(var(--primary),0.6)] backdrop-blur-md"
                     >
                       VIRAL CLIP
                     </motion.div>
-                    
+
                     <p className="text-white text-base md:text-lg font-bold line-clamp-3 leading-tight drop-shadow-2xl">
-                      {i % 2 === 0 ? "\"This insight completely changed the way I post content entirely...\"" : "\"The number one mistake creators are making on TikTok right now...\""}
+                      {i % 2 === 0
+                        ? "\"This insight completely changed the way I post content entirely...\""
+                        : "\"The number one mistake creators are making on TikTok right now...\""}
                     </p>
                   </div>
                 </motion.div>
@@ -443,10 +487,15 @@ export default function HomePage() {
 
            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
-                { name: "Alex Hormozi", tag: "@AlexHormozi", quote: "This pipeline literally replaced a full-time editor for us. The automated hook extraction is terrifyingly good.", views: "+2.4M Views/Mo" },
-                { name: "Chris Williamson", tag: "@ChrisWillx", quote: "I drop my 3-hour episodes in here and wake up to 30 completely finished, viral-ready shorts. It feels like cheating.", views: "+5.1M Views/Mo" },
-                { name: "My First Million", tag: "@MFMPod", quote: "We've tested every AI clipper on the market. This is the only one that actually understands the nuance of business comedy.", views: "+1.8M Views/Mo" }
-              ].map((t, i) => (
+                { name: "Alex Hormozi", tag: "@AlexHormozi", quote: "This pipeline literally replaced a full-time editor for us. The automated hook extraction is terrifyingly good.", views: "+2.4M Views/Mo", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=AlexHormozi" },
+                { name: "Chris Williamson", tag: "@ChrisWillx", quote: "I drop my 3-hour episodes in here and wake up to 30 completely finished, viral-ready shorts. It feels like cheating.", views: "+5.1M Views/Mo", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=ChrisWilliamson" },
+                { name: "My First Million", tag: "@MFMPod", quote: "We've tested every AI clipper on the market. This is the only one that actually understands the nuance of business comedy.", views: "+1.8M Views/Mo", avatar: undefined }
+              ].map((t, i) => {
+                const parts = t.name.trim().split(/\s+/);
+                const initials = parts.length >= 2
+                  ? `${parts[0]!.charAt(0)}${parts[parts.length - 1]!.charAt(0)}`.toUpperCase()
+                  : parts[0]?.charAt(0).toUpperCase() ?? "?";
+                return (
                  <motion.div 
                    key={i}
                    initial={{ opacity: 0, y: 30 }}
@@ -461,16 +510,22 @@ export default function HomePage() {
                     </div>
                     
                     <div className="mb-10 relative z-10">
-                       <div className="flex gap-1 mb-4">
-                          {[1,2,3,4,5].map(star => <Sparkles key={star} className="w-4 h-4 text-primary" />)}
+                       <div className="flex gap-0.5 mb-4">
+                          {[1,2,3,4,5].map((s) => (
+                            <Star key={s} className="w-5 h-5 text-primary fill-primary drop-shadow-[0_0_6px_rgba(var(--primary),0.6)]" />
+                          ))}
                        </div>
                        <p className="text-zinc-300 text-lg leading-relaxed font-medium">&quot;{t.quote}&quot;</p>
                     </div>
                     
                     <div className="flex items-center justify-between border-t border-white/10 pt-6 relative z-10">
                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center overflow-hidden">
-                             <div className="w-full h-full bg-gradient-to-tr from-primary/40 to-black/80" />
+                          <div className="w-12 h-12 rounded-full border-2 border-white/10 flex items-center justify-center overflow-hidden ring-2 ring-primary/20 shadow-[0_0_20px_rgba(var(--primary),0.15)] bg-zinc-800">
+                             {t.avatar ? (
+                               <TestimonialAvatar src={t.avatar} alt={t.name} initials={initials} />
+                             ) : (
+                               <span className="text-primary font-black text-sm">{initials}</span>
+                             )}
                           </div>
                           <div>
                              <h4 className="text-white font-bold text-sm tracking-wide">{t.name}</h4>
@@ -483,7 +538,8 @@ export default function HomePage() {
                        </div>
                     </div>
                  </motion.div>
-              ))}
+              );
+              })}
            </div>
         </section>
 
