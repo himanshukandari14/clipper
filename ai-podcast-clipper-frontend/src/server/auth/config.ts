@@ -37,6 +37,7 @@ const stripe =
     : null;
 
 export const authConfig = {
+  trustHost: true,
   providers: [
     ...(env.AUTH_GOOGLE_ID && env.AUTH_GOOGLE_SECRET
       ? [
