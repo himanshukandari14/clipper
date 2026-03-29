@@ -151,7 +151,7 @@ export default function HomePage() {
                     <motion.div animate={{ x: ["-100%", "200%"] }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }} className="absolute inset-0 w-1/4 h-full bg-white/40 skew-x-12 blur-sm" />
                     <span className="flex items-center justify-center gap-3 relative z-10">
                       <Wand2 className="w-6 h-6 group-hover:rotate-12 transition-transform" />
-                      Start Creating Free
+                      Start for Free
                     </span>
                   </motion.button>
                 </Link>
