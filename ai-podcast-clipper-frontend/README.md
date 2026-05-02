@@ -8,7 +8,7 @@ AI Podcast Clipper is a powerful full-stack application designed to transform lo
 - **Active Speaker Detection**: Automatically tracks and crops the video to focus on the current speaker, converting landscape video to vertical (9:16) format perfect for TikTok, Shorts, and Reels.
 - **AI Transcription**: Powered by **WhisperX** for high-accuracy speech-to-text with precise word-level timestamps.
 - **Dynamic Subtitles**: Automatically generates and burns in stylish, perfectly timed subtitles.
-- **Full-Stack Architecture**: Built with the **T3 Stack** (Next.js, tRPC, Prisma) and **Modal** for scalable serverless AI processing.
+- **Full-Stack Architecture**: **Next.js** (App Router), **Prisma**, **Auth.js**, and **Modal** for scalable serverless AI processing.
 - **Background Processing**: Robust job orchestration using **Inngest**.
 
 ## 🛠 Tech Stack
