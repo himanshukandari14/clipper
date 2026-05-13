@@ -99,8 +99,6 @@ export const processVideo = inngest.createFunction(
               Authorization: `Bearer ${env.PROCESS_VIDEO_ENDPOINT_AUTH}`,
             },
             signal: AbortSignal.timeout(1_380_000),
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            keepalive: true as any,
           });
           const bodySnippet = await response
             .text()

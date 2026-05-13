@@ -4,11 +4,11 @@ import Link from "next/link";
 import { ArrowRight, Scissors } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+
 import { signIn } from "next-auth/react";
 
 export function SiteHeader() {
-  const pathname = usePathname();
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authChecking, setAuthChecking] = useState(true);
 
