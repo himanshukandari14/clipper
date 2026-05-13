@@ -11,12 +11,32 @@ export const processVideo = inngest.createFunction(
       limit: 1,
       key: "event.data.userId",
     },
+    // Modal cold-starts an L40S GPU container which alone can take 10-14 min,
+    // plus 2-3 min execution.  25 min covers worst-case cold start + processing.
+    timeouts: {
+      finish: "25m",   // total function wall-clock limit
+    },
+    cancelOn: [{ event: "process-video/cancel", match: "data.uploadedFileId" }],
+    onFailure: async ({ event }) => {
+      const uploadedFileId = (event.data.event.data as { uploadedFileId: string }).uploadedFileId;
+      const file = await db.uploadedFile.findUnique({
+        where: { id: uploadedFileId },
+        select: { status: true },
+      });
+      if (file?.status === "processing") {
+        await db.uploadedFile.update({
+          where: { id: uploadedFileId },
+          data: { status: "cancelled" },
+        });
+      }
+    },
+    triggers: [{ event: "process-video-events" }],
   },
-  { event: "process-video-events" },
   async ({ event, step }) => {
-    const { uploadedFileId } = event.data as {
+    const { uploadedFileId, prompt } = event.data as {
       uploadedFileId: string;
       userId: string;
+      prompt: string | null;
     };
 
     try {
@@ -58,13 +78,39 @@ export const processVideo = inngest.createFunction(
           });
         });
 
-        await step.fetch(env.PROCESS_VIDEO_ENDPOINT, {
-          method: "POST",
-          body: JSON.stringify({ s3_key: s3Key }),
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${env.PROCESS_VIDEO_ENDPOINT_AUTH}`,
-          },
+        await step.run("invoke-processor", async () => {
+          // ── DEV FAILURE SIMULATION ──────────────────────────
+          // Flip MOCK_FAILURE="true" in .env to instantly fail this step and
+          // exercise the full failure notification flow (toast, badge, banner).
+          if (process.env.MOCK_FAILURE === "true") {
+            throw new Error(
+              "[MOCK_FAILURE] Simulated processor failure — set MOCK_FAILURE=\"false\" in .env to disable.",
+            );
+          }
+          // ──────────────────────────────────────────────────────────────────
+          // Modal cold-starts an L40S GPU container (10-14 min) then runs
+          // processing (2-3 min).  23 min covers worst-case while staying
+          // under the 25 min Inngest finish timeout.
+          const response = await fetch(env.PROCESS_VIDEO_ENDPOINT, {
+            method: "POST",
+            body: JSON.stringify({ s3_key: s3Key, prompt: prompt ?? undefined }),
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${env.PROCESS_VIDEO_ENDPOINT_AUTH}`,
+            },
+            signal: AbortSignal.timeout(1_380_000),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            keepalive: true as any,
+          });
+          const bodySnippet = await response
+            .text()
+            .then((t) => t.slice(0, 280))
+            .catch(() => "");
+          if (!response.ok) {
+            throw new Error(
+              `Processor HTTP ${response.status}${bodySnippet ? `: ${bodySnippet}` : ""}`,
+            );
+          }
         });
 
         const { clipsFound } = await step.run(
@@ -129,13 +175,15 @@ export const processVideo = inngest.createFunction(
         });
       }
     } catch {
-      await db.uploadedFile.update({
-        where: {
-          id: uploadedFileId,
-        },
-        data: {
-          status: "failed",
-        },
+      await step.run("set-status-failed", async () => {
+        await db.uploadedFile.update({
+          where: {
+            id: uploadedFileId,
+          },
+          data: {
+            status: "failed",
+          },
+        });
       });
     }
   },

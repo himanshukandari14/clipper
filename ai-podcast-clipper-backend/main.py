@@ -24,6 +24,7 @@ import whisperx
 
 class ProcessVideoRequest(BaseModel):
     s3_key: str
+    prompt: str | None = None
 
 
 image = (
@@ -419,7 +420,19 @@ class AiPodcastClipper:
 
         return json.dumps(segments)
 
-    def identify_moments(self, transcript: dict):
+    def identify_moments(self, transcript: dict, prompt: str | None = None):
+        user_guidance = ""
+        if prompt:
+            user_guidance = f"""
+
+ADDITIONAL USER GUIDANCE:
+The user has provided specific instructions for what kind of clips they want. You MUST prioritize these instructions:
+\"\"\"
+{prompt}
+\"\"\"
+Focus on finding moments that match the user's request above. If the user asks for specific topics, emotions, or themes, prioritize those over general viral hooks.
+"""
+
         response = self.gemini_client.models.generate_content(
             model="gemini-2.5-flash",
             contents="""
@@ -441,8 +454,9 @@ Avoid including:
 - Non-question and answer interactions.
 
 If there are no valid clips to extract, the output should be an empty list [], in JSON format. Also readable by json.loads() in Python.
-
-The transcript is as follows:\n\n"""
+"""
+            + user_guidance
+            + "\nThe transcript is as follows:\n\n"
             + str(transcript),
         )
         print(f"Identified moments response: ${response.text}")
@@ -455,6 +469,7 @@ The transcript is as follows:\n\n"""
         token: HTTPAuthorizationCredentials = Depends(auth_scheme),
     ):
         s3_key = request.s3_key
+        prompt = request.prompt
 
         if token.credentials != os.environ["AUTH_TOKEN"]:
             raise HTTPException(
@@ -475,7 +490,7 @@ The transcript is as follows:\n\n"""
         transcript_segments = json.loads(transcript_segments_json)
 
         print("Identifying clip moments")
-        identified_moments_raw = self.identify_moments(transcript_segments)
+        identified_moments_raw = self.identify_moments(transcript_segments, prompt=prompt)
 
         cleaned_json_string = identified_moments_raw.strip()
         if cleaned_json_string.startswith("```json"):

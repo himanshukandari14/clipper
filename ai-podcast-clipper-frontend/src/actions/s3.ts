@@ -10,6 +10,7 @@ import { db } from "~/server/db";
 export async function generateUploadUrl(fileInfo: {
   filename: string;
   contentType: string;
+  prompt?: string;
 }): Promise<{
   success: boolean;
   signedUrl: string;
@@ -46,6 +47,7 @@ export async function generateUploadUrl(fileInfo: {
       s3Key: key,
       displayName: fileInfo.filename,
       uploaded: false,
+      prompt: fileInfo.prompt ?? null,
     },
     select: {
       id: true,

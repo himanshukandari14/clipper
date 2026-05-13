@@ -17,6 +17,7 @@ export async function processVideo(uploadedFileId: string) {
       uploaded: true,
       id: true,
       userId: true,
+      prompt: true,
     },
   });
 
@@ -24,7 +25,11 @@ export async function processVideo(uploadedFileId: string) {
 
   await inngest.send({
     name: "process-video-events",
-    data: { uploadedFileId: uploadedVideo.id, userId: uploadedVideo.userId },
+    data: {
+      uploadedFileId: uploadedVideo.id,
+      userId: uploadedVideo.userId,
+      prompt: uploadedVideo.prompt ?? null,
+    },
   });
 
   await db.uploadedFile.update({
