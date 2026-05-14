@@ -70,6 +70,17 @@ function statusBadge(item: UploadRow) {
         </Badge>
       );
     case "processed":
+      if (item.clipsCount === 0) {
+        return (
+          <Badge
+            variant="outline"
+            className="border-zinc-500/40 bg-zinc-900/50 text-zinc-300 font-medium"
+          >
+            <CheckCircle2 className="text-zinc-400" />
+            No clips found (Refunded)
+          </Badge>
+        );
+      }
       return (
         <Badge
           variant="outline"
@@ -172,7 +183,7 @@ export function DashboardClient({
         if (f.clipsCount === 0) {
           toast.warning("Processing finished", {
             description:
-              `"${f.filename}" completed but no clips were detected. Try a different clip or longer segment.`,
+              `"${f.filename}" completed but no clips were detected. You have not been charged any credits.`,
             duration: 7000,
           });
         } else {
