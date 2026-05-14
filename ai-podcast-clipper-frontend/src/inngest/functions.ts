@@ -204,3 +204,37 @@ async function listS3ObjectsByPrefix(prefix: string) {
   const response = await s3Client.send(listCommand);
   return response.Contents?.map((item) => item.Key).filter(Boolean) ?? [];
 }
+
+
+export const handleCancelledRun = inngest.createFunction(
+  {
+    id: "handle-cancelled-run",
+    retries: 3,
+    triggers: [{ event: "inngest/function.cancelled" }],
+  },
+  async ({ event }) => {
+    // Only handle cancellations of the process-video function
+    const functionId = (event.data as Record<string, unknown>).function_id as string | undefined;
+    if (!functionId?.includes("process-video")) return;
+
+    const triggerEvent = (event.data as Record<string, unknown>).event as
+      | { data?: { uploadedFileId?: string } }
+      | undefined;
+    const uploadedFileId = triggerEvent?.data?.uploadedFileId;
+    if (!uploadedFileId) return;
+
+    const file = await db.uploadedFile.findUnique({
+      where: { id: uploadedFileId },
+      select: { status: true },
+    });
+
+    // Only update if it's still stuck in "processing"
+    if (file?.status === "processing") {
+      await db.uploadedFile.update({
+        where: { id: uploadedFileId },
+        data: { status: "failed" },
+      });
+    }
+  },
+);
+

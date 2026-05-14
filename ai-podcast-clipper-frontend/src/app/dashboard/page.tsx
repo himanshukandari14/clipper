@@ -25,6 +25,7 @@ export default async function DashboardPage() {
           displayName: true,
           status: true,
           createdAt: true,
+          updatedAt: true,
           _count: {
             select: {
               clips: true,
@@ -52,6 +53,24 @@ export default async function DashboardPage() {
 
   if (!userData) {
     redirect("/");
+  }
+
+  // ── Stale detection ────────────────────────────────────────────────
+  // If a run has been "processing" for over 30 min, it's dead — mark it
+  // failed so the UI doesn't show a spinner forever.
+  const STALE_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
+  const now = Date.now();
+  for (const file of userData.uploadedFiles) {
+    if (
+      file.status === "processing" &&
+      now - file.updatedAt.getTime() > STALE_THRESHOLD_MS
+    ) {
+      await db.uploadedFile.update({
+        where: { id: file.id },
+        data: { status: "failed" },
+      });
+      file.status = "failed";
+    }
   }
 
   const formattedFiles = userData.uploadedFiles.map((file) => ({
